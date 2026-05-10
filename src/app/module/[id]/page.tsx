@@ -9,6 +9,50 @@ import { getModuleById, SectionQuestion } from '@/data/modules';
 import { useGameStore } from '@/lib/store';
 import CodeEditor from '@/components/CodeEditor';
 
+// ─── Sound helpers ───────────────────────────────────────────────────────────
+
+function playCorrectSound() {
+  try {
+    const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+    const now = ctx.currentTime;
+    // Two ascending notes: C5 → E5
+    [[523.25, now], [659.25, now + 0.15]].forEach(([freq, start]) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq as number, start as number);
+      gain.gain.setValueAtTime(0.35, start as number);
+      gain.gain.exponentialRampToValueAtTime(0.001, (start as number) + 0.35);
+      osc.start(start as number);
+      osc.stop((start as number) + 0.35);
+    });
+    setTimeout(() => ctx.close(), 800);
+  } catch { /* audio not available */ }
+}
+
+function playWrongSound() {
+  try {
+    const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+    const now = ctx.currentTime;
+    // Short descending "ding": E4 → C4
+    [[329.63, now], [261.63, now + 0.12]].forEach(([freq, start]) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq as number, start as number);
+      gain.gain.setValueAtTime(0.3, start as number);
+      gain.gain.exponentialRampToValueAtTime(0.001, (start as number) + 0.28);
+      osc.start(start as number);
+      osc.stop((start as number) + 0.28);
+    });
+    setTimeout(() => ctx.close(), 700);
+  } catch { /* audio not available */ }
+}
+
 // ─── Section question card ────────────────────────────────────────────────────
 
 const XP_PENALTY    = 5;   // XP deducted per wrong answer
@@ -32,8 +76,10 @@ function QuestionCard({ question, onCorrect, onWrong }: QuestionCardProps) {
     setSelected(idx);
 
     if (idx === question.correctIndex) {
+      playCorrectSound();
       onCorrect();
     } else {
+      playWrongSound();
       const newAttempts = attempts + 1;
       setAttempts(newAttempts);
       onWrong(newAttempts);
