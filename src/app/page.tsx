@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/lib/store';
 import AuthModal from '@/components/AuthModal';
@@ -187,6 +188,16 @@ function HeroScreen({ username, onStart }: { username: string; onStart: () => vo
   );
 }
 
+// ── Ref capture (reads ?ref= and stores in localStorage) ─────────────────────
+function RefCapture() {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const ref = searchParams.get('ref');
+    if (ref) localStorage.setItem('algorift_ref', ref);
+  }, [searchParams]);
+  return null;
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const router = useRouter();
@@ -233,12 +244,15 @@ export default function HomePage() {
   // Step 1: enter name
   if (phase === 'username') {
     return (
-      <UsernameScreen
-        onDone={(name) => {
-          setUsername(name);
-          setPhase('auth'); // immediately show auth modal
-        }}
-      />
+      <>
+        <Suspense><RefCapture /></Suspense>
+        <UsernameScreen
+          onDone={(name) => {
+            setUsername(name);
+            setPhase('auth'); // immediately show auth modal
+          }}
+        />
+      </>
     );
   }
 
@@ -246,6 +260,7 @@ export default function HomePage() {
   if (phase === 'auth') {
     return (
       <>
+        <Suspense><RefCapture /></Suspense>
         {/* Dim background */}
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
@@ -265,9 +280,12 @@ export default function HomePage() {
 
   // Step 3: hero screen → start assessment
   return (
-    <HeroScreen
-      username={username}
-      onStart={() => router.push('/assessment')}
-    />
+    <>
+      <Suspense><RefCapture /></Suspense>
+      <HeroScreen
+        username={username}
+        onStart={() => router.push('/assessment')}
+      />
+    </>
   );
 }

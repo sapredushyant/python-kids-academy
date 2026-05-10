@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MODULES, Module } from '@/data/modules';
@@ -9,7 +9,9 @@ import { useGameStore, ModuleProgress } from '@/lib/store';
 import ModuleCard from '@/components/ModuleCard';
 import XPBar from '@/components/XPBar';
 import StreakDisplay from '@/components/StreakDisplay';
+import InviteModal from '@/components/InviteModal';
 import { getLevelTitle } from '@/lib/utils';
+import { supabase } from '@/lib/supabase';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -155,10 +157,44 @@ export default function DashboardPage() {
     checkAndUpdateStreak,
   } = useGameStore();
 
+  const [showInvite,    setShowInvite]    = useState(false);
+  const [userEmail,     setUserEmail]     = useState('');
+  const [userId,        setUserId]        = useState('');
+
+  const addXP = useGameStore((s) => s.addXP);
+
   // ── Update streak on mount ────────────────────────────────────────────────
   useEffect(() => {
     checkAndUpdateStreak();
   }, [checkAndUpdateStreak]);
+
+  // ── Get signed-in user's email + id; redeem referral bonus if pending ─────
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data }) => {
+      const user = data.session?.user;
+      if (!user) return;
+      setUserEmail(user.email ?? '');
+      setUserId(user.id);
+
+      // Redeem referral bonus if this user arrived via an invite link
+      const ref = localStorage.getItem('algorift_ref');
+      if (ref && ref !== user.id) {
+        localStorage.removeItem('algorift_ref');
+        try {
+          const res = await fetch('/api/referral', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ inviterUserId: ref, refereeUserId: user.id }),
+          });
+          const d = await res.json();
+          if (d.success && d.bonus) {
+            addXP(d.bonus); // award referee locally
+          }
+        } catch { /* non-critical */ }
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Daily quote (rotate by day of week) ──────────────────────────────────
   const quoteIndex = new Date().getDay() % DAILY_QUOTES.length;
@@ -449,7 +485,52 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
+        {/* ── Invite a Friend card ───────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.45 }}
+          className="mt-4 rounded-2xl border border-white/10 bg-space-800 overflow-hidden"
+        >
+          <div
+            className="h-1.5 w-full"
+            style={{ background: 'linear-gradient(90deg,#6c47ff 0%,#a855f7 50%,#22d3ee 100%)' }}
+          />
+          <div className="px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="flex items-center gap-4 flex-1">
+              <span className="text-4xl select-none" aria-hidden="true">🤝</span>
+              <div>
+                <h3 className="text-white font-bold text-base leading-tight mb-0.5">
+                  Invite a Friend
+                </h3>
+                <p className="text-white/55 text-sm leading-relaxed">
+                  Know someone who&apos;d love Python? Send them a personal invite — and both of you earn{' '}
+                  <span className="text-brand-400 font-semibold">+250 XP</span> when they sign up!
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowInvite(true)}
+              className="flex-shrink-0 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-500 to-purple-500 text-white font-bold text-sm hover:opacity-90 transition-opacity"
+            >
+              Send Invite →
+            </button>
+          </div>
+        </motion.div>
+
       </div>
+
+      {/* ── Invite modal ──────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showInvite && (
+          <InviteModal
+            inviterName={username}
+            inviterEmail={userEmail}
+            inviterUserId={userId}
+            onClose={() => setShowInvite(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
