@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -33,6 +33,16 @@ export default function ModulePage({ params }: { params: { id: string } }) {
   const [revealedHints,     setRevealedHints]      = useState(0);
   const [hintsOpen,         setHintsOpen]          = useState(false);
 
+  // ── Anti-skip gates ──────────────────────────────────────────────────────
+  // Tracks which sections had their code run at least once
+  const [sectionCodeRun,  setSectionCodeRun]  = useState<Set<number>>(new Set());
+  // Countdown timers (seconds left) for text-only sections
+  const [sectionCountdown, setSectionCountdown] = useState<Record<number, number>>({});
+  // Whether code challenge editor has been run at least once
+  const [challengeRun, setChallengeRun] = useState(false);
+
+  const timerRefs = useRef<Record<number, ReturnType<typeof setInterval>>>({});
+
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const challengeRef = useRef<HTMLDivElement | null>(null);
 
@@ -45,6 +55,42 @@ export default function ModulePage({ params }: { params: { id: string } }) {
       return () => clearTimeout(timer);
     }
   }, [completedSections.size, module, showChallenge]);
+
+  // Start a reading countdown for text-only sections when they become current
+  useEffect(() => {
+    if (!module) return;
+    const section = module.sections[currentSection];
+    if (!section || section.code) return;           // code sections don't need timer
+    if (completedSections.has(currentSection)) return; // already done
+    if (sectionCountdown[currentSection] !== undefined) return; // timer already running
+
+    let count = 10;
+    setSectionCountdown((prev) => ({ ...prev, [currentSection]: count }));
+    const id = setInterval(() => {
+      count -= 1;
+      setSectionCountdown((prev) => ({ ...prev, [currentSection]: Math.max(0, count) }));
+      if (count <= 0) clearInterval(id);
+    }, 1000);
+    timerRefs.current[currentSection] = id;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentSection, module]);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    const refs = timerRefs.current;
+    return () => { Object.values(refs).forEach(clearInterval); };
+  }, []);
+
+  // Whether the "Got it" button is unlocked for a given section
+  const canMarkDone = useCallback((idx: number): boolean => {
+    if (!module) return false;
+    const section = module.sections[idx];
+    if (section.code) return sectionCodeRun.has(idx);  // must run code
+    return (sectionCountdown[idx] ?? Infinity) <= 0;   // must wait timer
+  }, [module, sectionCodeRun, sectionCountdown]);
+
+  // Whether the quiz is unlocked (all sections + challenge code run)
+  const quizUnlocked = allDone && (challengeRun || alreadyCompleted);
 
   // ── Not found ──────────────────────────────────────────────────────────────
 
@@ -205,17 +251,17 @@ export default function ModulePage({ params }: { params: { id: string } }) {
 
           {/* Take the Quiz button */}
           <button
-            disabled={!allDone}
+            disabled={!quizUnlocked}
             onClick={() => router.push(`/module/${id}/quiz`)}
             className={[
               'w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-200',
-              allDone
+              quizUnlocked
                 ? 'bg-gradient-to-r from-brand-500 to-cyan-500 text-white shadow-lg shadow-brand-500/30 hover:opacity-90'
                 : 'bg-white/5 text-white/25 cursor-not-allowed',
             ].join(' ')}
           >
             <Trophy size={15} />
-            Take the Quiz →
+            {!allDone ? 'Complete sections first' : !challengeRun && !alreadyCompleted ? 'Run the challenge first' : 'Take the Quiz →'}
           </button>
 
           {/* Back link */}
@@ -333,17 +379,17 @@ export default function ModulePage({ params }: { params: { id: string } }) {
           <div className="lg:hidden flex items-center justify-between text-sm">
             <span className="text-white/40">{completedSections.size} / {module.sections.length} sections done</span>
             <button
-              disabled={!allDone}
+              disabled={!quizUnlocked}
               onClick={() => router.push(`/module/${id}/quiz`)}
               className={[
                 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200',
-                allDone
+                quizUnlocked
                   ? 'bg-gradient-to-r from-brand-500 to-cyan-500 text-white shadow-md hover:opacity-90'
                   : 'bg-white/5 text-white/25 cursor-not-allowed',
               ].join(' ')}
             >
               <Trophy size={12} />
-              Take Quiz →
+              {quizUnlocked ? 'Take Quiz →' : '🔒 Quiz Locked'}
             </button>
           </div>
 
@@ -421,21 +467,40 @@ export default function ModulePage({ params }: { params: { id: string } }) {
                         height="250px"
                         readOnly={false}
                         showRunButton={true}
+                        onRun={() => setSectionCodeRun((prev) => { const next = new Set(prev); next.add(idx); return next; })}
                       />
+                      {!done && !sectionCodeRun.has(idx) && (
+                        <p className="mt-2 text-xs text-yellow-400/70 flex items-center gap-1.5">
+                          <span>▶</span> Run the code above to unlock &ldquo;Got it&rdquo;
+                        </p>
+                      )}
                     </div>
                   )}
 
                   {/* Got it button */}
-                  {!done && (
-                    <motion.button
-                      whileTap={{ scale: 0.97 }}
-                      onClick={() => markSectionDone(idx)}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-500 to-cyan-500 text-white font-bold text-sm shadow-lg shadow-brand-500/20 hover:opacity-90 transition-opacity duration-150"
-                    >
-                      <CheckCircle2 size={16} />
-                      Got it! ✓
-                    </motion.button>
-                  )}
+                  {!done && (() => {
+                    const unlocked = canMarkDone(idx);
+                    const countdown = !section.code ? (sectionCountdown[idx] ?? 10) : 0;
+                    return (
+                      <motion.button
+                        whileTap={unlocked ? { scale: 0.97 } : {}}
+                        onClick={unlocked ? () => markSectionDone(idx) : undefined}
+                        className={[
+                          'flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200',
+                          unlocked
+                            ? 'bg-gradient-to-r from-brand-500 to-cyan-500 text-white shadow-lg shadow-brand-500/20 hover:opacity-90 cursor-pointer'
+                            : 'bg-white/8 text-white/30 cursor-not-allowed',
+                        ].join(' ')}
+                      >
+                        <CheckCircle2 size={16} />
+                        {unlocked
+                          ? 'Got it! ✓'
+                          : section.code
+                          ? 'Run the code first'
+                          : `Read first… ${countdown}s`}
+                      </motion.button>
+                    );
+                  })()}
 
                   {done && (
                     <div className="flex items-center gap-2 text-green-400 text-sm font-semibold">
@@ -485,7 +550,13 @@ export default function ModulePage({ params }: { params: { id: string } }) {
                   height="300px"
                   readOnly={false}
                   showRunButton={true}
+                  onRun={() => setChallengeRun(true)}
                 />
+                {!challengeRun && (
+                  <p className="text-xs text-yellow-400/70 flex items-center gap-1.5 -mt-1">
+                    <span>▶</span> Run your code above to unlock the quiz
+                  </p>
+                )}
 
                 {/* Hints section */}
                 {module.codeChallenge.hints.length > 0 && (
@@ -559,12 +630,17 @@ export default function ModulePage({ params }: { params: { id: string } }) {
                 {/* CTA: Take the quiz */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-2">
                   <motion.button
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => router.push(`/module/${id}/quiz`)}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-500 to-cyan-500 text-white font-extrabold text-sm shadow-xl shadow-brand-500/30 hover:opacity-90 transition-opacity duration-150"
+                    whileTap={quizUnlocked ? { scale: 0.97 } : {}}
+                    onClick={quizUnlocked ? () => router.push(`/module/${id}/quiz`) : undefined}
+                    className={[
+                      'flex items-center gap-2 px-6 py-3 rounded-xl font-extrabold text-sm transition-all duration-200',
+                      quizUnlocked
+                        ? 'bg-gradient-to-r from-brand-500 to-cyan-500 text-white shadow-xl shadow-brand-500/30 hover:opacity-90 cursor-pointer'
+                        : 'bg-white/8 text-white/30 cursor-not-allowed',
+                    ].join(' ')}
                   >
                     <Trophy size={16} />
-                    I&apos;m done! Take the Quiz →
+                    {quizUnlocked ? "I'm done! Take the Quiz →" : '🔒 Run your code to unlock quiz'}
                   </motion.button>
                   <p className="text-white/30 text-xs">
                     Don&apos;t worry — you can come back and try the challenge again any time.
@@ -611,13 +687,17 @@ export default function ModulePage({ params }: { params: { id: string } }) {
                 <ChevronLeft size={15} />
                 Dashboard
               </Link>
-              <button
-                onClick={() => router.push(`/module/${id}/quiz`)}
-                className="flex items-center gap-1.5 text-sm text-brand-400 hover:text-brand-300 font-semibold transition-colors"
-              >
-                Take the Quiz
-                <ChevronRight size={15} />
-              </button>
+              {quizUnlocked ? (
+                <button
+                  onClick={() => router.push(`/module/${id}/quiz`)}
+                  className="flex items-center gap-1.5 text-sm text-brand-400 hover:text-brand-300 font-semibold transition-colors"
+                >
+                  Take the Quiz
+                  <ChevronRight size={15} />
+                </button>
+              ) : (
+                <span className="text-white/30 text-xs">🔒 Complete the code challenge to unlock</span>
+              )}
             </div>
           )}
 

@@ -62,6 +62,7 @@ interface CodeEditorProps {
   height?: string;
   readOnly?: boolean;
   onCodeChange?: (code: string) => void;
+  onRun?: () => void;
   showRunButton?: boolean;
   title?: string;
 }
@@ -148,6 +149,7 @@ export default function CodeEditor({
   height = '300px',
   readOnly = false,
   onCodeChange,
+  onRun,
   showRunButton = true,
   title,
 }: CodeEditorProps) {
@@ -189,14 +191,16 @@ export default function CodeEditor({
       const result = await runPython(code);
       setOutput(result.output ?? '');
       setRunError(result.error ?? null);
+      onRun?.(); // notify parent that code was run
     } catch (err: unknown) {
       setRunError(
         err instanceof Error ? err.message : 'An unexpected error occurred.'
       );
+      onRun?.(); // still counts as an attempt
     } finally {
       setIsRunning(false);
     }
-  }, [isPyodideReady, isRunning, runPython, code]);
+  }, [isPyodideReady, isRunning, runPython, code, onRun]);
 
   // ── Copy code ───────────────────────────────────────────────────────────────
 
