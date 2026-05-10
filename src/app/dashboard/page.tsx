@@ -237,7 +237,7 @@ export default function DashboardPage() {
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-space-900 pb-20">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-14 sm:pt-20">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28">
 
         {/* ── Greeting + quote ──────────────────────────────────────────── */}
         <motion.div
