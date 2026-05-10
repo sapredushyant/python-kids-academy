@@ -1,8 +1,6 @@
 import { Resend } from 'resend';
 import { NextRequest, NextResponse } from 'next/server';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(req: NextRequest) {
   const { friendEmail, inviterName, inviterEmail, inviterUserId } = await req.json();
 
@@ -15,6 +13,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid email address.' }, { status: 400 });
   }
 
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.error('RESEND_API_KEY is not set');
+    return NextResponse.json({ error: 'Email service not configured.' }, { status: 500 });
+  }
+
+  const resend = new Resend(apiKey);
+
   const fromName    = inviterName ? `${inviterName} via AlgoRift` : 'AlgoRift';
   const fromAddress = 'invite@algorift.org';
   const inviteLink  = inviterUserId
@@ -22,7 +28,7 @@ export async function POST(req: NextRequest) {
     : 'https://algorift.org';
 
   try {
-    await resend.emails.send({
+    const { error: sendError } = await resend.emails.send({
       from: `${fromName} <${fromAddress}>`,
       to: [friendEmail],
       replyTo: inviterEmail || undefined,
@@ -123,9 +129,14 @@ export async function POST(req: NextRequest) {
       `,
     });
 
+    if (sendError) {
+      console.error('Resend send error:', JSON.stringify(sendError));
+      return NextResponse.json({ error: sendError.message ?? 'Failed to send email.' }, { status: 500 });
+    }
+
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error('Resend error:', err);
+    console.error('Resend exception:', err);
     return NextResponse.json({ error: 'Failed to send email. Please try again.' }, { status: 500 });
   }
 }
