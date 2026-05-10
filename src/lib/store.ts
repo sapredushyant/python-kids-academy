@@ -10,6 +10,8 @@ export interface ModuleProgress {
 }
 
 export interface GameStore {
+  _hasHydrated: boolean;
+  setHasHydrated: (v: boolean) => void;
   username: string;
   avatar: string;
   xp: number;
@@ -117,6 +119,8 @@ export const useGameStore = create<GameStore>()(
       }
 
       return {
+        _hasHydrated: false,
+        setHasHydrated: (v: boolean) => set({ _hasHydrated: v }),
         username: '',
         avatar: '🐍',
         xp: 0,
@@ -306,6 +310,9 @@ export const useGameStore = create<GameStore>()(
     },
     {
       name: 'pka-store',
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

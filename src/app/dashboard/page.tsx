@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState, useRef, ReactNode } from 'react';
+import { useEffect, useState, ReactNode } from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MODULES, Module } from '@/data/modules';
 import { useGameStore, ModuleProgress } from '@/lib/store';
@@ -147,19 +148,12 @@ export default function DashboardPage() {
     completedModules,
     startingModuleId,
     assessmentCompleted,
+    assessmentScore,
+    assessmentMaxScore,
     streak,
     longestStreak,
     checkAndUpdateStreak,
   } = useGameStore();
-
-  // ── Redirect if assessment not done ───────────────────────────────────────
-  const redirected = useRef(false);
-  useEffect(() => {
-    if (!assessmentCompleted && !redirected.current) {
-      redirected.current = true;
-      router.replace('/assessment');
-    }
-  }, [assessmentCompleted, router]);
 
   // ── Update streak on mount ────────────────────────────────────────────────
   useEffect(() => {
@@ -204,11 +198,6 @@ export default function DashboardPage() {
     return `🌟 ${streak} days! Legendary!`;
   }
 
-  // ── Don't render until assessment is confirmed ────────────────────────────
-  if (!assessmentCompleted) {
-    return null; // redirect happening
-  }
-
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-space-900 pb-20">
@@ -238,6 +227,50 @@ export default function DashboardPage() {
             {todayQuote}
           </p>
         </motion.div>
+
+        {/* ── Assessment banner ─────────────────────────────────────────── */}
+        {!assessmentCompleted ? (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 rounded-2xl border border-brand-500/40 bg-brand-600/10 overflow-hidden"
+          >
+            <div className="h-1 w-full bg-gradient-to-r from-brand-500 to-cyan-400" />
+            <div className="px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-2xl">🎯</span>
+                  <h3 className="text-white font-bold text-base">Take Your Placement Quiz!</h3>
+                </div>
+                <p className="text-white/50 text-sm">
+                  A 20-question quiz to find your perfect starting point. Takes about 5 minutes.
+                </p>
+              </div>
+              <Link
+                href="/assessment"
+                className="flex-shrink-0 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-500 to-cyan-500 text-white font-bold text-sm hover:opacity-90 transition-opacity"
+              >
+                Start Quiz →
+              </Link>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 rounded-2xl border border-white/8 bg-space-800/60 px-5 py-3 flex items-center justify-between"
+          >
+            <p className="text-white/40 text-sm">
+              Placement score: <span className="text-white/70 font-semibold">{assessmentScore}/{assessmentMaxScore}</span>
+            </p>
+            <Link
+              href="/assessment"
+              className="text-brand-400 hover:text-brand-300 text-sm font-medium transition-colors"
+            >
+              Retake Assessment →
+            </Link>
+          </motion.div>
+        )}
 
         {/* ── Stats row ─────────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">

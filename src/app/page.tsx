@@ -4,10 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/lib/store';
+import AuthModal from '@/components/AuthModal';
 
-// ---------------------------------------------------------------------------
-// Animation variants
-// ---------------------------------------------------------------------------
 const fadeUp = {
   hidden: { opacity: 0, y: 32 },
   visible: (delay: number = 0) => ({
@@ -26,9 +24,6 @@ const scaleIn = {
   }),
 };
 
-// ---------------------------------------------------------------------------
-// Feature card data
-// ---------------------------------------------------------------------------
 const FEATURES = [
   {
     icon: '🧠',
@@ -50,18 +45,13 @@ const FEATURES = [
   },
 ] as const;
 
-// ---------------------------------------------------------------------------
-// Stats row data
-// ---------------------------------------------------------------------------
 const STATS = [
   { value: '20', label: 'Modules' },
   { value: '500+', label: 'XP to earn' },
   { value: '∞', label: 'Achievements to unlock' },
 ] as const;
 
-// ---------------------------------------------------------------------------
-// Username input screen
-// ---------------------------------------------------------------------------
+// ── Username input screen ─────────────────────────────────────────────────────
 function UsernameScreen({ onDone }: { onDone: (name: string) => void }) {
   const [input, setInput] = useState('');
   const [error, setError] = useState('');
@@ -69,18 +59,9 @@ function UsernameScreen({ onDone }: { onDone: (name: string) => void }) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = input.trim();
-    if (!trimmed) {
-      setError('Please enter your name first!');
-      return;
-    }
-    if (trimmed.length < 2) {
-      setError('Name must be at least 2 characters.');
-      return;
-    }
-    if (trimmed.length > 24) {
-      setError('Name must be 24 characters or fewer.');
-      return;
-    }
+    if (!trimmed) { setError('Please enter your name first!'); return; }
+    if (trimmed.length < 2) { setError('Name must be at least 2 characters.'); return; }
+    if (trimmed.length > 24) { setError('Name must be 24 characters or fewer.'); return; }
     onDone(trimmed);
   }
 
@@ -92,32 +73,23 @@ function UsernameScreen({ onDone }: { onDone: (name: string) => void }) {
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="w-full max-w-md text-center"
       >
-        {/* Big friendly emoji */}
         <motion.div
           animate={{ y: [0, -10, 0] }}
           transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           className="text-7xl mb-6 select-none"
-          aria-hidden="true"
         >
           🐍
         </motion.div>
-
-        <h1 className="text-4xl font-extrabold mb-2 text-gradient">
-          Welcome, Coder!
-        </h1>
+        <h1 className="text-4xl font-extrabold mb-2 text-gradient">Welcome, Coder!</h1>
         <p className="text-slate-400 mb-8 text-lg">
           What should we call you on your cosmic coding journey?
         </p>
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <input
               type="text"
               value={input}
-              onChange={(e) => {
-                setInput(e.target.value);
-                if (error) setError('');
-              }}
+              onChange={(e) => { setInput(e.target.value); if (error) setError(''); }}
               placeholder="Enter your name…"
               maxLength={24}
               autoFocus
@@ -136,7 +108,6 @@ function UsernameScreen({ onDone }: { onDone: (name: string) => void }) {
               )}
             </AnimatePresence>
           </div>
-
           <motion.button
             type="submit"
             whileHover={{ scale: 1.04 }}
@@ -151,106 +122,48 @@ function UsernameScreen({ onDone }: { onDone: (name: string) => void }) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Hero / landing screen
-// ---------------------------------------------------------------------------
-function HeroScreen({
-  username,
-  onStart,
-}: {
-  username: string;
-  onStart: () => void;
-}) {
-  const isReturning = username !== '';
-
+// ── Hero screen (shown after name + auth) ─────────────────────────────────────
+function HeroScreen({ username, onStart }: { username: string; onStart: () => void }) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-16 text-center">
-      {/* Snake emoji with float animation */}
-      <motion.div
-        variants={scaleIn}
-        initial="hidden"
-        animate="visible"
-        custom={0}
-        className="text-8xl mb-6 animate-float select-none"
-        aria-hidden="true"
-      >
+      <motion.div variants={scaleIn} initial="hidden" animate="visible" custom={0}
+        className="text-8xl mb-6 animate-float select-none">
         🐍
       </motion.div>
 
-      {/* Headline */}
-      <motion.h1
-        variants={fadeUp}
-        initial="hidden"
-        animate="visible"
-        custom={0.1}
-        className="text-6xl sm:text-7xl font-extrabold mb-3 text-gradient leading-tight"
-      >
+      <motion.h1 variants={fadeUp} initial="hidden" animate="visible" custom={0.1}
+        className="text-6xl sm:text-7xl font-extrabold mb-3 text-gradient leading-tight">
         Python Academy
       </motion.h1>
 
-      {/* Subtitle */}
-      <motion.p
-        variants={fadeUp}
-        initial="hidden"
-        animate="visible"
-        custom={0.2}
-        className="text-xl sm:text-2xl text-slate-300 mb-4 max-w-xl"
-      >
+      <motion.p variants={fadeUp} initial="hidden" animate="visible" custom={0.2}
+        className="text-xl sm:text-2xl text-slate-300 mb-4 max-w-xl">
         Your epic coding adventure starts here
       </motion.p>
 
-      {/* Returning-user welcome banner */}
-      <AnimatePresence>
-        {isReturning && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 12 }}
-            transition={{ duration: 0.4 }}
-            className="mb-6 px-6 py-3 rounded-full bg-violet-600/20 border border-violet-400/30 text-violet-200 text-lg font-medium"
-          >
-            Welcome back,{' '}
-            <span className="text-gradient-gold font-bold">{username}</span>!
-            Ready to start?
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Feature cards */}
       <motion.div
-        variants={fadeUp}
-        initial="hidden"
-        animate="visible"
-        custom={0.3}
-        className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-3xl mb-10"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.25 }}
+        className="mb-6 px-6 py-3 rounded-full bg-violet-600/20 border border-violet-400/30 text-violet-200 text-lg font-medium"
       >
+        Welcome, <span className="text-gradient-gold font-bold">{username}</span>! Ready to begin?
+      </motion.div>
+
+      <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={0.3}
+        className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-3xl mb-10">
         {FEATURES.map((feature, i) => (
-          <motion.div
-            key={feature.title}
-            variants={scaleIn}
-            initial="hidden"
-            animate="visible"
+          <motion.div key={feature.title} variants={scaleIn} initial="hidden" animate="visible"
             custom={0.35 + i * 0.1}
-            className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-white/5 border border-violet-500/20 hover:border-violet-400/50 hover:bg-white/8 transition-all duration-250 glow-purple"
-          >
-            <span className="text-4xl" aria-hidden="true">
-              {feature.icon}
-            </span>
+            className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-white/5 border border-violet-500/20 hover:border-violet-400/50 transition-all duration-250 glow-purple">
+            <span className="text-4xl">{feature.icon}</span>
             <h3 className="text-lg font-bold text-white">{feature.title}</h3>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              {feature.description}
-            </p>
+            <p className="text-slate-400 text-sm leading-relaxed">{feature.description}</p>
           </motion.div>
         ))}
       </motion.div>
 
-      {/* CTA button */}
-      <motion.div
-        variants={fadeUp}
-        initial="hidden"
-        animate="visible"
-        custom={0.65}
-      >
+      <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={0.65}>
         <motion.button
           onClick={onStart}
           whileHover={{ scale: 1.05 }}
@@ -261,22 +174,12 @@ function HeroScreen({
         </motion.button>
       </motion.div>
 
-      {/* Stats row */}
-      <motion.div
-        variants={fadeUp}
-        initial="hidden"
-        animate="visible"
-        custom={0.8}
-        className="mt-12 flex flex-wrap justify-center gap-8"
-      >
+      <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={0.8}
+        className="mt-12 flex flex-wrap justify-center gap-8">
         {STATS.map((stat) => (
           <div key={stat.label} className="flex flex-col items-center gap-1">
-            <span className="text-3xl font-extrabold text-gradient">
-              {stat.value}
-            </span>
-            <span className="text-slate-400 text-sm uppercase tracking-widest">
-              {stat.label}
-            </span>
+            <span className="text-3xl font-extrabold text-gradient">{stat.value}</span>
+            <span className="text-slate-400 text-sm uppercase tracking-widest">{stat.label}</span>
           </div>
         ))}
       </motion.div>
@@ -284,57 +187,83 @@ function HeroScreen({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Page component
-// ---------------------------------------------------------------------------
+// ── Page ──────────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const router = useRouter();
-  const { username, assessmentCompleted, setUsername, checkAndUpdateStreak } =
+  const { username, assessmentCompleted, _hasHydrated, setUsername, checkAndUpdateStreak } =
     useGameStore();
 
-  // Update login streak on mount (safe — idempotent if already called today)
+  // 'username'   = entering name
+  // 'auth'       = auth modal shown after name submitted
+  // 'hero'       = hero screen (name set, auth dismissed/done)
+  const [phase, setPhase] = useState<'username' | 'auth' | 'hero'>('username');
+
   useEffect(() => {
     checkAndUpdateStreak();
   }, [checkAndUpdateStreak]);
 
-  // If assessment is already done, send the user straight to the dashboard.
-  // This runs after hydration to avoid SSR mismatch.
+  // Wait for Zustand to rehydrate from localStorage before redirecting
   useEffect(() => {
+    if (!_hasHydrated) return;
     if (assessmentCompleted) {
       router.replace('/dashboard');
     }
-  }, [assessmentCompleted, router]);
+  }, [_hasHydrated, assessmentCompleted, router]);
 
-  // While we wait for the redirect to happen, render nothing (or a tiny loader)
-  // so we don't flash the landing page to a returning user.
-  if (assessmentCompleted) {
+  // Sync phase with stored username on first hydration
+  useEffect(() => {
+    if (_hasHydrated && username && !assessmentCompleted) {
+      setPhase('hero');
+    }
+  }, [_hasHydrated, username, assessmentCompleted]);
+
+  // Show spinner until hydrated
+  if (!_hasHydrated || assessmentCompleted) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-            className="w-10 h-10 rounded-full border-4 border-violet-500 border-t-transparent"
-          />
-          <p className="text-slate-400 text-sm">Loading your dashboard…</p>
-        </div>
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          className="w-10 h-10 rounded-full border-4 border-violet-500 border-t-transparent"
+        />
       </div>
     );
   }
 
-  // Step 1: username not set → show name-collection screen
-  if (!username) {
+  // Step 1: enter name
+  if (phase === 'username') {
     return (
       <UsernameScreen
         onDone={(name) => {
           setUsername(name);
-          // After saving the name, the component re-renders and shows HeroScreen
+          setPhase('auth'); // immediately show auth modal
         }}
       />
     );
   }
 
-  // Step 2: username set, assessment not done → show hero landing
+  // Step 2: auth modal pops up over a dimmed background
+  if (phase === 'auth') {
+    return (
+      <>
+        {/* Dim background */}
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-6xl mb-4 animate-float">🐍</div>
+            <h2 className="text-2xl font-bold text-white/80">Almost ready, {username}!</h2>
+            <p className="text-white/40 mt-2">Sign in to save your progress across devices</p>
+          </div>
+        </div>
+        <AnimatePresence>
+          <AuthModal
+            onClose={() => setPhase('hero')}
+          />
+        </AnimatePresence>
+      </>
+    );
+  }
+
+  // Step 3: hero screen → start assessment
   return (
     <HeroScreen
       username={username}
