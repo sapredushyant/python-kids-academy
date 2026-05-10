@@ -1,12 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
-// Supabase redirects here after Google OAuth and Email magic-link clicks.
-// We exchange the one-time code for a session, then send the user to the dashboard.
-export default function AuthCallback() {
+// Inner component uses useSearchParams — must be inside <Suspense> in Next.js 14.
+function AuthCallbackInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -21,12 +20,19 @@ export default function AuthCallback() {
     }
   }, [router, searchParams]);
 
+  return null;
+}
+
+export default function AuthCallback() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
         <div className="text-5xl mb-4 animate-bounce">🐍</div>
         <p className="text-white/60 text-lg">Completing sign in…</p>
       </div>
+      <Suspense>
+        <AuthCallbackInner />
+      </Suspense>
     </div>
   );
 }
