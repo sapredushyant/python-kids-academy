@@ -149,26 +149,23 @@ print(value * 2)      # 84`,
       },
     ],
     codeChallenge: {
-      prompt: 'Create a program that asks for a temperature in Celsius, converts it to Fahrenheit using the formula F = C * 9/5 + 32, and prints a friendly message with the result rounded to 1 decimal place.',
+      prompt: 'Create a temperature converter. Set a variable called celsius to any number you like, then convert it to Fahrenheit using the formula F = C * 9/5 + 32, and print a friendly message with the result rounded to 1 decimal place.',
       starterCode: `# Temperature Converter
 # Formula: Fahrenheit = Celsius * 9/5 + 32
 
-celsius_text = input("Enter temperature in Celsius: ")
+celsius = 100  # Change this to any temperature you like!
 
-# Step 1: Convert the input to a float
-# Step 2: Apply the formula
-# Step 3: Print the result rounded to 1 decimal place
+# Step 1: Apply the formula to get fahrenheit
+# Step 2: Round the result to 1 decimal place
+# Step 3: Print a friendly message like "100°C is equal to 212.0°F"
 `,
       hints: [
-        'Use float() to convert the input string to a number.',
+        'Multiply celsius by 9/5 then add 32 to get fahrenheit.',
         'Use the round() function: round(number, 1) rounds to 1 decimal place.',
-        'Build your message with str() or use an f-string: f"Result: {value:.1f}"',
+        'Use an f-string for the message: f"{celsius}°C is equal to {fahrenheit}°F"',
       ],
       sampleSolution: `# Temperature Converter
-celsius_text = input("Enter temperature in Celsius: ")
-
-# Convert input to float
-celsius = float(celsius_text)
+celsius = 100  # Change this to any temperature you like!
 
 # Apply the formula
 fahrenheit = celsius * 9 / 5 + 32
@@ -473,14 +470,15 @@ for name, info in students.items():
       },
     ],
     codeChallenge: {
-      prompt: 'Build a simple contact book. Store at least 3 contacts (each with a name, phone, and email). Then write code to look up a contact by name and print their details nicely.',
+      prompt: 'Build a simple contact book. Store at least 3 contacts (each with a name, phone, and email). Then set search_name to one of the names and print their details nicely. Also handle what happens when the name is not found.',
       starterCode: `# Contact Book
 contacts = {
     # Add your contacts here as nested dictionaries
+    # Example: "Alice": {"phone": "555-1234", "email": "alice@example.com"}
 }
 
-# Ask the user for a name to look up
-search_name = input("Search for contact: ")
+# Set this to the name you want to look up
+search_name = "Alice"
 
 # Look up the contact and print their details
 # Handle the case where the name is not found
@@ -497,7 +495,7 @@ contacts = {
     "Carol": {"phone": "555-9012", "email": "carol@example.com"},
 }
 
-search_name = input("Search for contact: ")
+search_name = "Alice"  # Try changing this to "Bob", "Carol", or "Dave"
 contact = contacts.get(search_name)
 
 if contact:
@@ -649,9 +647,9 @@ print(poem)`,
       },
     ],
     codeChallenge: {
-      prompt: 'Write a username validator. Ask the user for a username. It must be 3-15 characters long, contain only letters and numbers, and start with a letter. Print whether it is valid and why if it is not.',
+      prompt: 'Write a username validator. Set username to a string of your choice. It must be 3-15 characters long, contain only letters and numbers, and start with a letter. Print whether it is valid and explain why if it is not.',
       starterCode: `# Username Validator
-username = input("Choose a username: ")
+username = "CodeNinja42"  # Change this to test different usernames!
 
 # Check the rules:
 # 1. Length must be between 3 and 15 characters
@@ -664,7 +662,7 @@ username = input("Choose a username: ")
         'username[0].isalpha() checks if the first character is a letter.',
       ],
       sampleSolution: `# Username Validator
-username = input("Choose a username: ")
+username = "CodeNinja42"  # Try "ab", "123bad", "!nvalid", or "ThisNameIsWayTooLongForOurRules"
 
 if len(username) < 3 or len(username) > 15:
     print("Invalid: Username must be 3-15 characters long.")
@@ -881,7 +879,7 @@ print("Understanding error types is the first step!")`,
         content: 'The try/except block is your safety net. You put risky code inside the try block, and if something goes wrong, Python jumps to the except block instead of crashing. You can catch specific error types to handle different problems differently, and you can use "as e" to get the actual error message.',
         code: `# Basic try/except
 try:
-    number = int(input("Enter a number: "))
+    number = int("25")  # Try changing "25" to "abc" or "0" to see different errors
     result = 100 / number
     print(f"100 divided by {number} = {result}")
 except ValueError:
