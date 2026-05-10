@@ -1,9 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
+// Fall back to placeholder values so the module doesn't crash at build time
+// when env vars haven't been set yet. Auth/leaderboard calls will simply
+// return errors until real values are configured in Vercel.
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? 'https://placeholder.supabase.co';
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? 'placeholder-anon-key';
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export interface LeaderboardRow {
   id: string;
