@@ -1,8 +1,8 @@
 export interface AssessmentQuestion {
   id: number;
   question: string;
-  options: string[];       // 4 options
-  correctIndex: number;    // 0-3
+  options: string[];       // first 4 are real answers, last is always "I don't know"
+  correctIndex: number;    // 0-3 (never points to the "I don't know" option)
   explanation: string;
   difficulty: 'basic' | 'intermediate' | 'advanced' | 'expert';
   points: number;
@@ -13,7 +13,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   {
     id: 1,
     question: 'What does `len([1, 2, 3])` return?',
-    options: ['2', '3', '4', '1'],
+    options: ['2', '3', '4', '1', "🤷 I don't know this one"],
     correctIndex: 1,
     explanation:
       '`len()` counts the number of items in a list. The list [1, 2, 3] has 3 items, so `len([1, 2, 3])` returns 3.',
@@ -28,6 +28,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
       'for i in range(1, 6):',
       'while i < 5:',
       'for i in range(6):',
+      "🤷 I don't know this one",
     ],
     correctIndex: 1,
     explanation:
@@ -38,7 +39,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   {
     id: 3,
     question: 'Which keyword is used to define a function in Python?',
-    options: ['func', 'def', 'function', 'define'],
+    options: ['func', 'def', 'function', 'define', "🤷 I don't know this one"],
     correctIndex: 1,
     explanation:
       'In Python, you use the `def` keyword to define a function. For example: `def my_function():` starts a new function called my_function.',
@@ -48,7 +49,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   {
     id: 4,
     question: 'What is the value of `"hello"[1]`?',
-    options: ['h', 'e', 'l', 'he'],
+    options: ['h', 'e', 'l', 'he', "🤷 I don't know this one"],
     correctIndex: 1,
     explanation:
       'Python indexes strings starting at 0. So index 0 is "h", index 1 is "e", index 2 is "l", and so on. `"hello"[1]` gives us "e".',
@@ -58,7 +59,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   {
     id: 5,
     question: 'How do you add the number 7 to a list called `nums`?',
-    options: ['nums.add(7)', 'nums.append(7)', 'nums.push(7)', 'nums.insert(7)'],
+    options: ['nums.add(7)', 'nums.append(7)', 'nums.push(7)', 'nums.insert(7)', "🤷 I don't know this one"],
     correctIndex: 1,
     explanation:
       '`append()` is the correct list method to add a single item to the end of a list in Python. `add()` is used for sets, `push()` does not exist in Python, and `insert()` requires a position index as its first argument.',
@@ -70,7 +71,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   {
     id: 6,
     question: 'What does `{"a": 1, "b": 2}.get("c", 0)` return?',
-    options: ['None', 'Error', '0', '"c"'],
+    options: ['None', 'Error', '0', '"c"', "🤷 I don't know this one"],
     correctIndex: 2,
     explanation:
       'The dictionary `.get(key, default)` method returns the value for the key if it exists, or the default value if it does not. Since "c" is not in the dictionary, it returns the default value 0 instead of raising a KeyError.',
@@ -80,7 +81,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   {
     id: 7,
     question: 'What is the result of `[1, 2, 3, 4, 5][1:4]`?',
-    options: ['[1, 2, 3]', '[2, 3, 4]', '[2, 3, 4, 5]', '[1, 2, 3, 4]'],
+    options: ['[1, 2, 3]', '[2, 3, 4]', '[2, 3, 4, 5]', '[1, 2, 3, 4]', "🤷 I don't know this one"],
     correctIndex: 1,
     explanation:
       'List slicing with `[1:4]` starts at index 1 (which is 2) and goes up to but does not include index 4 (which is 5). So you get the elements at indexes 1, 2, and 3 — which are 2, 3, and 4.',
@@ -95,6 +96,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
       'f"Hello, {Alice}!"',
       "f\"Hello, {'Alice'}!\"",
       '"Hello, " + \'Alice\' + \'!\'',
+      "🤷 I don't know this one",
     ],
     correctIndex: 2,
     explanation:
@@ -110,6 +112,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
       'Loops through items in a list',
       'Handles errors so the program does not crash',
       'Creates a new class',
+      "🤷 I don't know this one",
     ],
     correctIndex: 2,
     explanation:
@@ -125,6 +128,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
       'It initialises a new object with its starting values',
       'It prints the object to the screen',
       'It imports a module into the class',
+      "🤷 I don't know this one",
     ],
     correctIndex: 1,
     explanation:
@@ -137,7 +141,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   {
     id: 11,
     question: 'What does `[x**2 for x in range(4)]` produce?',
-    options: ['[1, 4, 9, 16]', '[0, 1, 4, 9]', '[0, 2, 4, 6]', '[0, 1, 2, 3]'],
+    options: ['[1, 4, 9, 16]', '[0, 1, 4, 9]', '[0, 2, 4, 6]', '[0, 1, 2, 3]', "🤷 I don't know this one"],
     correctIndex: 1,
     explanation:
       '`range(4)` gives 0, 1, 2, 3. The list comprehension squares each value: 0²=0, 1²=1, 2²=4, 3²=9. So the result is [0, 1, 4, 9]. Note that range(4) starts at 0, not 1.',
@@ -152,6 +156,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
       'Accept any number of positional arguments',
       'Accept any number of keyword arguments',
       'Automatically unpack a list before calling the function',
+      "🤷 I don't know this one",
     ],
     correctIndex: 1,
     explanation:
@@ -167,6 +172,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
       'Opens the file and automatically closes it when the block finishes',
       'Creates a new file and then opens it',
       'Reads all the lines of the file into a list',
+      "🤷 I don't know this one",
     ],
     correctIndex: 1,
     explanation:
@@ -178,10 +184,11 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
     id: 14,
     question: 'What does `super().__init__()` do inside a child class?',
     options: [
-      'Calls the current class\'s own __init__ again',
-      'Calls a sibling class\'s __init__',
-      'Calls the parent class\'s __init__ method',
-      'Calls Python\'s built-in object initialiser directly by name',
+      "Calls the current class's own __init__ again",
+      "Calls a sibling class's __init__",
+      "Calls the parent class's __init__ method",
+      "Calls Python's built-in object initialiser directly by name",
+      "🤷 I don't know this one",
     ],
     correctIndex: 2,
     explanation:
@@ -192,7 +199,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   {
     id: 15,
     question: 'Which dunder (magic) method controls how an object is displayed when you use `print()` on it?',
-    options: ['__init__', '__repr__', '__str__', '__print__'],
+    options: ['__init__', '__repr__', '__str__', '__print__', "🤷 I don't know this one"],
     correctIndex: 2,
     explanation:
       '`__str__` is called by `print()` and `str()` to get a human-readable string representation of an object. `__repr__` is meant for developers and debugging. `__print__` does not exist in Python.',
@@ -209,6 +216,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
       'Wraps a function to extend or modify its behaviour',
       'Adds a special attribute to a class',
       'Makes a function run faster automatically',
+      "🤷 I don't know this one",
     ],
     correctIndex: 1,
     explanation:
@@ -219,7 +227,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   {
     id: 17,
     question: 'A function that calls itself is called what?',
-    options: ['Iterative', 'Recursive', 'Lambda', 'Generator'],
+    options: ['Iterative', 'Recursive', 'Lambda', 'Generator', "🤷 I don't know this one"],
     correctIndex: 1,
     explanation:
       'A recursive function is one that calls itself as part of its own body. It must have a base case that stops the recursion, otherwise it would call itself forever. Classic examples include calculating factorials or traversing a folder tree.',
@@ -234,6 +242,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
       'A for loop in disguise',
       'An anonymous (nameless) function',
       'A decorator',
+      "🤷 I don't know this one",
     ],
     correctIndex: 2,
     explanation:
@@ -249,6 +258,7 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
       'Pauses the function and returns a value, then resumes from the same point next time',
       'Raises an exception and stops execution',
       'Imports a value from another module',
+      "🤷 I don't know this one",
     ],
     correctIndex: 1,
     explanation:
@@ -259,7 +269,13 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   {
     id: 20,
     question: 'For binary search to work correctly, the list must be:',
-    options: ['Reversed (highest to lowest)', 'In a random order', 'Sorted (in order)', 'Containing only unique values'],
+    options: [
+      'Reversed (highest to lowest)',
+      'In a random order',
+      'Sorted (in order)',
+      'Containing only unique values',
+      "🤷 I don't know this one",
+    ],
     correctIndex: 2,
     explanation:
       'Binary search works by repeatedly halving the search space — it looks at the middle item and decides whether the target is to the left or right. This only makes sense if the list is sorted, because otherwise there is no reliable way to know which half to search next.',
