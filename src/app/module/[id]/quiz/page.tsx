@@ -19,6 +19,7 @@ import {
 import { getModuleById, getNextModule } from '@/data/modules';
 import { useGameStore } from '@/lib/store';
 import { starsFromScore, xpFromQuizScore } from '@/lib/utils';
+import { syncToLeaderboard } from '@/lib/supabase';
 
 // react-confetti is client-only
 const ReactConfetti = dynamic(() => import('react-confetti'), { ssr: false });
@@ -215,6 +216,16 @@ export default function QuizPage({ params }: { params: { id: string } }) {
 
   function handleFinish() {
     completeModule(id, score, stars, xpEarned);
+    // Fire-and-forget sync — only uploads if the user is signed in
+    const s = useGameStore.getState();
+    syncToLeaderboard({
+      username: s.username,
+      avatar: s.avatar,
+      xp: s.xp,
+      level: s.level,
+      streak: s.streak,
+      completedModulesCount: Object.keys(s.completedModules).length,
+    });
     if (nextModule) {
       router.push(`/module/${nextModule.id}`);
     } else {
