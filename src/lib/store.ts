@@ -228,7 +228,7 @@ export const useGameStore = create<GameStore>()(
 
         addXP: (amount: number) =>
           set((state) => {
-            const newXP = state.xp + amount;
+            const newXP = Math.max(0, state.xp + amount); // floor at 0
             const newLevel = calcLevel(newXP);
             return { xp: newXP, level: newLevel };
           }),

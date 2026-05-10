@@ -5,10 +5,17 @@ export interface CodeChallenge {
   sampleSolution: string;
 }
 
+export interface SectionQuestion {
+  prompt: string;
+  options: string[];   // exactly 3 choices
+  correctIndex: number;
+}
+
 export interface ModuleSection {
   title: string;
   content: string;
   code?: string;
+  question: SectionQuestion;
 }
 
 export interface QuizQuestion {
@@ -69,6 +76,12 @@ print(type(score))        # <class 'int'>
 print(type(temperature))  # <class 'float'>
 print(type(name))         # <class 'str'>
 print(type(is_winner))    # <class 'bool'>`,
+        question: {
+          prompt: 'What do you call it when Python figures out the type of a variable automatically?',
+          options: ['Static typing', 'Dynamic typing', 'Manual typing'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Multiple Assignment & Swapping',
@@ -91,6 +104,12 @@ print(first, second)   # Bob Alice
 coords = [51.5, -0.1]
 latitude, longitude = coords
 print(latitude, longitude)  # 51.5 -0.1`,
+        question: {
+          prompt: 'After running: first = \'Alice\'  second = \'Bob\'  first, second = second, first — what is the value of first?',
+          options: ['Alice', 'Bob', 'Error'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Type Conversion (Casting)',
@@ -114,6 +133,12 @@ value = "42"
 if isinstance(value, str):
     value = int(value)
 print(value * 2)      # 84`,
+        question: {
+          prompt: 'When you convert the float 3.99 to an int using int(3.99), what do you get?',
+          options: ['4', '3', '3.99'],
+          correctIndex: 1,
+        },
+
       },
     ],
     quiz: [
@@ -220,6 +245,12 @@ print(fruits[::-1])    # ['fig', 'elderberry', 'date', 'cherry', 'banana', 'appl
 
 # Negative index: last item
 print(fruits[-1])      # fig`,
+        question: {
+          prompt: 'Given fruits = [\'apple\',\'banana\',\'cherry\',\'date\',\'elderberry\',\'fig\'], what does fruits[::-1] do?',
+          options: ['Returns the last item only', 'Returns every second item', 'Returns the whole list in reverse order'],
+          correctIndex: 2,
+        },
+
       },
       {
         title: 'Power Methods',
@@ -248,6 +279,12 @@ print(numbers)          # [9, 7, 5, 3, 2, 1, 0]
 
 # Count how many times a value appears
 print([1,2,2,3,2].count(2))  # 3`,
+        question: {
+          prompt: 'Which list method adds an item to the END of a list?',
+          options: ['insert()', 'append()', 'add()'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Looping Like a Pro',
@@ -274,6 +311,12 @@ scores = [88, 45, 92, 67, 78]
 for i, score in enumerate(scores):
     if score >= 80:
         print(f"Student {i+1} passed with {score}")`,
+        question: {
+          prompt: 'What does the enumerate() function give you when you loop over a list?',
+          options: ['Only the item values', 'Only the index numbers', 'Both the index AND the item value'],
+          correctIndex: 2,
+        },
+
       },
     ],
     quiz: [
@@ -384,6 +427,12 @@ print(character.get("speed", 0))      # 0 (default value)
 # Check if a key exists
 if "weapon" in character:
     print("Has a weapon:", character["weapon"])`,
+        question: {
+          prompt: 'What does character.get(\'speed\', 0) return if \'speed\' is not a key in the dictionary?',
+          options: ['An error', 'None', '0'],
+          correctIndex: 2,
+        },
+
       },
       {
         title: 'Modifying Dictionaries',
@@ -409,6 +458,12 @@ print(f"Used potions: now have {potions_left} left... wait, those are gone!")
 # Update multiple keys at once with update()
 inventory.update({"arrows": 30, "shield": 1})
 print(inventory)`,
+        question: {
+          prompt: 'What does the pop() method do when called on a dictionary?',
+          options: ['Adds a new key', 'Removes a key and returns its value', 'Clears the whole dictionary'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Looping & Nesting',
@@ -435,6 +490,12 @@ students = {
 
 for name, info in students.items():
     print(f"{name} is {info['age']} and scored {info['score']}")`,
+        question: {
+          prompt: 'Which dictionary method gives you both the key AND the value when looping?',
+          options: ['.keys()', '.values()', '.items()'],
+          correctIndex: 2,
+        },
+
       },
     ],
     quiz: [
@@ -552,6 +613,12 @@ print(words)                # ['Hello', 'Python World!']
 # Join a list back into a string
 parts = ["one", "two", "three"]
 print(" - ".join(parts))    # one - two - three`,
+        question: {
+          prompt: 'What does the strip() method do to a string?',
+          options: ['Removes all letters', 'Removes leading and trailing spaces', 'Converts the string to uppercase'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Searching Inside Strings',
@@ -579,6 +646,12 @@ print(sentence.lower().count("the"))  # 2
 print("12345".isdigit())   # True
 print("hello".isalpha())   # True
 print("abc123".isalnum())  # True`,
+        question: {
+          prompt: 'What does the find() method return if the text is NOT found in the string?',
+          options: ['False', 'None', '-1'],
+          correctIndex: 2,
+        },
+
       },
       {
         title: 'F-Strings & Formatting',
@@ -612,6 +685,12 @@ Python is awesome,
 And so are you!
 """
 print(poem)`,
+        question: {
+          prompt: 'What is the output of the f-string: f"6 times 7 = {6 * 7}"?',
+          options: ['6 times 7 = {6 * 7}', '6 times 7 = 42', 'Error'],
+          correctIndex: 1,
+        },
+
       },
     ],
     quiz: [
@@ -712,6 +791,12 @@ def create_hero(name, power, level=1, health=100):
 
 hero = create_hero(name="Zara", power="telepathy", level=5)
 print(hero)  # Zara (Lv5) — Power: telepathy, HP: 100`,
+        question: {
+          prompt: 'In def play_sound(sound_name, volume=50), what happens if you call play_sound(\'laser\') without giving a volume?',
+          options: ['Python raises an error', 'volume defaults to 50', 'volume becomes None'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: '*args — Accept Any Number of Arguments',
@@ -734,6 +819,12 @@ greet_all("Hello", "Alice", "Bob", "Carol")
 # Hello, Alice!
 # Hello, Bob!
 # Hello, Carol!`,
+        question: {
+          prompt: 'What type does *args create inside a function?',
+          options: ['A list', 'A tuple', 'A dictionary'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: '**kwargs & Variable Scope',
@@ -759,6 +850,12 @@ update_score(150)
 update_score(200)
 update_score(180)
 print(f"Final high score: {high_score}")`,
+        question: {
+          prompt: 'What keyword do you use inside a function to modify a variable that was created outside the function?',
+          options: ['outer', 'global', 'public'],
+          correctIndex: 1,
+        },
+
       },
     ],
     quiz: [
@@ -873,6 +970,12 @@ quiz_score("Bob", 70, 88, 65)
 # data = {"a": 1}
 # print(data["z"])
 print("Understanding error types is the first step!")`,
+        question: {
+          prompt: 'Which type of error happens when you try to use a variable that has never been defined?',
+          options: ['ValueError', 'TypeError', 'NameError'],
+          correctIndex: 2,
+        },
+
       },
       {
         title: 'Try & Except — Your Safety Net',
@@ -898,6 +1001,12 @@ def safe_divide(a, b):
 print(safe_divide(10, 2))    # 5.0
 print(safe_divide(10, 0))    # Error: division by zero
 print(safe_divide(10, "x"))  # Error: unsupported operand`,
+        question: {
+          prompt: 'In a try/except block, what happens to the except block if NO error occurs in the try block?',
+          options: ['It runs anyway', 'It is skipped', 'Python asks you which to run'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Raise & Finally',
@@ -926,6 +1035,12 @@ def load_data(filename):
         print("Cleanup: closing file connection")  # always runs
 
 load_data("scores.txt")`,
+        question: {
+          prompt: 'When does the finally block run?',
+          options: ['Only if an error occurred', 'Only if no error occurred', 'Always, whether or not an error occurred'],
+          correctIndex: 2,
+        },
+
       },
     ],
     quiz: [
@@ -1045,6 +1160,12 @@ with open("hello.txt", "r") as f:
 with open("hello.txt", "r") as f:
     lines = f.readlines()
     print(f"File has {len(lines)} lines")`,
+        question: {
+          prompt: 'What is the main advantage of opening a file with \'with open(...) as f:\'?',
+          options: ['It reads the file faster', 'It automatically closes the file when done', 'It encrypts the file'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Writing & Appending',
@@ -1065,6 +1186,12 @@ with open("scores.txt", "a") as f:
 # Verify by reading back
 with open("scores.txt", "r") as f:
     print(f.read())`,
+        question: {
+          prompt: 'Which file mode adds new content to the END of an existing file without deleting what is already there?',
+          options: ['"w" (write)', '"r" (read)', '"a" (append)'],
+          correctIndex: 2,
+        },
+
       },
       {
         title: 'Safe File Handling',
@@ -1095,6 +1222,12 @@ save_list("shopping.txt", ["apples", "bread", "milk"])
 content = read_file_safely("shopping.txt")
 if content:
     print(content)`,
+        question: {
+          prompt: 'What error does Python raise when you try to open a file that does not exist?',
+          options: ['ValueError', 'FileNotFoundError', 'MissingFileError'],
+          correctIndex: 1,
+        },
+
       },
     ],
     quiz: [
@@ -1219,6 +1352,12 @@ dog2 = Dog("Bella", "Poodle", 5)
 dog1.bark()        # Rex says: Woof!
 dog2.describe()    # Bella is a 5-year-old Poodle
 print(dog1.name)   # Rex`,
+        question: {
+          prompt: 'In object-oriented programming, what is a class?',
+          options: ['One specific object', 'A blueprint for building objects', 'A list of variables'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Attributes and Methods',
@@ -1250,6 +1389,12 @@ account = BankAccount("Luna", 100)
 account.deposit(50)
 account.withdraw(30)
 account.show_history()`,
+        question: {
+          prompt: 'What does \'self\' refer to inside a method of a class?',
+          options: ['The class itself', 'The specific object the method is called on', 'The module the class is in'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'The __str__ Method',
@@ -1275,6 +1420,12 @@ print(hero)       # [Mage] Zara | Level 1 | HP: 80
 
 hero.level_up()
 print(hero)       # [Mage] Zara | Level 2 | HP: 100`,
+        question: {
+          prompt: 'What happens when you define __str__ on a class and then use print() on one of its objects?',
+          options: ['Python shows the ugly default like <object at 0x...>', 'Python uses your __str__ method to decide what to show', 'Python raises an error'],
+          correctIndex: 1,
+        },
+
       },
     ],
     quiz: [
@@ -1421,6 +1572,12 @@ rex = Dog("Rex")
 rex.speak()             # Rex says Woof! (inherited)
 rex.describe()          # I am Rex, an animal. (inherited)
 rex.learn_trick("sit")  # Rex learned: sit (new!)`,
+        question: {
+          prompt: 'In class Dog(Animal):, what does Dog automatically receive from Animal?',
+          options: ['Nothing — it starts fresh', 'Only Animal\'s methods, not its attributes', 'All of Animal\'s attributes and methods'],
+          correctIndex: 2,
+        },
+
       },
       {
         title: 'Overriding Methods',
@@ -1452,6 +1609,12 @@ car = ElectricCar("TeslaTron", 250, 500)
 print(car.describe())  # TeslaTron (max 250 km/h) | Range: 500 km (electric)
 print(car.move())      # TeslaTron is moving! (inherited)
 print(car.charge())    # TeslaTron is charging...`,
+        question: {
+          prompt: 'What happens when a child class defines a method with the same name as the parent?',
+          options: ['Python raises an error', 'Both the parent and child versions run', 'The child\'s version replaces the parent\'s version'],
+          correctIndex: 2,
+        },
+
       },
       {
         title: 'isinstance() and Multiple Inheritance',
@@ -1480,6 +1643,12 @@ print(whiskers.is_domesticated()) # from Pet
 print(isinstance(whiskers, Cat))    # True
 print(isinstance(whiskers, Animal)) # True
 print(isinstance(whiskers, Pet))    # True`,
+        question: {
+          prompt: 'If whiskers is a Cat object and Cat inherits from Animal, what does isinstance(whiskers, Animal) return?',
+          options: ['False', 'True', '"Cat"'],
+          correctIndex: 1,
+        },
+
       },
     ],
     quiz: [
@@ -1635,6 +1804,12 @@ print(v1)          # Vector(3, 4)
 print(v1 + v2)     # Vector(4, 6)
 print(len(v1))     # 5  (magnitude)
 print(v1 == v2)    # False`,
+        question: {
+          prompt: 'Which dunder method is called automatically when you write v1 + v2 for two objects?',
+          options: ['__plus__', '__add__', '__combine__'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Generators and yield',
@@ -1664,6 +1839,12 @@ counter = count_up(10)
 print(next(counter))  # 10
 print(next(counter))  # 11
 print(next(counter))  # 12`,
+        question: {
+          prompt: 'What keyword does a generator function use instead of return to produce values one at a time?',
+          options: ['send', 'yield', 'emit'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Ternary, Unpacking & Walrus',
@@ -1692,6 +1873,12 @@ random.seed(42)
 while (roll := random.randint(1, 6)) != 6:
     print(f"Rolled {roll}, try again...")
 print("Got a 6!")`,
+        question: {
+          prompt: 'What does the expression "teen" if age >= 13 else "child" evaluate to when age = 11?',
+          options: ['"teen"', '"child"', 'Error'],
+          correctIndex: 1,
+        },
+
       },
     ],
     quiz: [
@@ -1824,6 +2011,12 @@ names = ["alice", "bob", "carol"]
 greetings = [f"Hello, {name.title()}!" for name in names]
 for g in greetings:
     print(g)`,
+        question: {
+          prompt: 'What does [n * n for n in range(1, 4)] produce?',
+          options: ['[1, 2, 3]', '[1, 4, 9]', '[2, 4, 6]'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Filtering with Conditions',
@@ -1847,6 +2040,12 @@ print(long_upper)  # ['HELLO', 'HOWDY']
 scores = [55, 82, 47, 91, 63, 78, 34]
 passing = [s for s in scores if s >= 60]
 print(passing)  # [82, 91, 63, 78]`,
+        question: {
+          prompt: 'What does [s for s in [55, 82, 47, 91, 63] if s >= 60] return?',
+          options: ['[55, 47]', '[82, 91, 63]', '[55, 82, 47, 91, 63]'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Dict, Set & Nested Comprehensions',
@@ -1873,6 +2072,12 @@ for row in table:
 # [1, 2, 3]
 # [2, 4, 6]
 # [3, 6, 9]`,
+        question: {
+          prompt: 'What type does {w[0] for w in [\'apple\', \'banana\', \'avocado\']} create?',
+          options: ['A list with possible duplicates', 'A set with unique first letters only', 'A dictionary'],
+          correctIndex: 1,
+        },
+
       },
     ],
     quiz: [
@@ -2000,6 +2205,12 @@ print(classify(8))       # even
 # Immediately called lambda (rarely used but shows the idea)
 result = (lambda x, y: x ** y)(2, 10)
 print(result)            # 1024`,
+        question: {
+          prompt: 'What does lambda x: x * 2 create?',
+          options: ['A variable named x set to 2', 'A small anonymous function that doubles its input', 'A loop that runs twice'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'map() and filter()',
@@ -2022,6 +2233,12 @@ print(even_squares)  # [4, 16, 36, 64, 100]
 names = ["alice", "bob", "carol"]
 proper = list(map(lambda s: s.capitalize(), names))
 print(proper)    # ['Alice', 'Bob', 'Carol']`,
+        question: {
+          prompt: 'What does list(filter(lambda n: n % 2 == 0, [1, 2, 3, 4, 5])) return?',
+          options: ['[1, 3, 5]', '[2, 4]', '[True, False, True, False, True]'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Sorting with Lambda Keys',
@@ -2049,6 +2266,12 @@ inventory = [
 by_price = sorted(inventory, key=lambda x: x["price"])
 for item in by_price:
     print(f"{item['item']}: {item['price']} gold")`,
+        question: {
+          prompt: 'What does sorted([\'banana\', \'fig\', \'kiwi\'], key=lambda w: len(w)) return?',
+          options: ['[\'banana\', \'fig\', \'kiwi\']', '[\'fig\', \'kiwi\', \'banana\']', '[\'kiwi\', \'banana\', \'fig\']'],
+          correctIndex: 1,
+        },
+
       },
     ],
     quiz: [
@@ -2182,6 +2405,12 @@ double = make_multiplier(2)
 triple = make_multiplier(3)
 print(double(5))   # 10
 print(triple(5))   # 15`,
+        question: {
+          prompt: 'What does greet = say_hello (without parentheses) do?',
+          options: ['Calls say_hello immediately', 'Stores the function itself in the variable greet', 'Creates a copy of the return value'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Writing a Decorator',
@@ -2207,6 +2436,12 @@ answer = calculate_sum(3, 7)
 
 # The decorator runs: === Starting ===, then the function, then === Done! ===
 print(f"Result was: {answer}")`,
+        question: {
+          prompt: 'What is @friendly above a function definition shorthand for?',
+          options: ['A comment describing the function', 'func = friendly(func)', 'Running friendly() before defining func'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Practical Decorators',
@@ -2241,6 +2476,12 @@ def add_numbers(a, b):
     return a + b
 
 add_numbers(10, 20)`,
+        question: {
+          prompt: 'What is the purpose of @wraps(func) inside a decorator?',
+          options: ['It makes the decorator run faster', 'It preserves the original function\'s name and documentation', 'It prevents the function from being called twice'],
+          correctIndex: 1,
+        },
+
       },
     ],
     quiz: [
@@ -2369,6 +2610,12 @@ def sum_to(n):
     return n + sum_to(n - 1)   # recursive case
 
 print(sum_to(5))   # 15  (5+4+3+2+1+0)`,
+        question: {
+          prompt: 'What is the purpose of the base case in a recursive function?',
+          options: ['To make the function run faster', 'To stop the recursion so it does not run forever', 'To call the function a second time'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Classic Recursive Problems',
@@ -2401,6 +2648,12 @@ def power(base, exp):
     return base * power(base, exp - 1)
 
 print(power(2, 8))   # 256`,
+        question: {
+          prompt: 'What is the value of factorial(4)?',
+          options: ['10', '24', '16'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Recursion on Nested Structures',
@@ -2430,6 +2683,12 @@ def deep_sum(lst):
 
 data = [1, [2, 3], [4, [5, [6]]]]
 print(deep_sum(data))   # 21`,
+        question: {
+          prompt: 'In the flatten function, what does the function do when it finds a sublist inside the main list?',
+          options: ['It skips the sublist', 'It calls flatten() again on the sublist (recurse)', 'It raises an error'],
+          correctIndex: 1,
+        },
+
       },
     ],
     quiz: [
@@ -2551,6 +2810,12 @@ data = [64, 25, 12, 22, 11]
 print("Original:  ", data)
 print("Bubble:    ", bubble_sort(data))
 print("Selection: ", selection_sort(data))`,
+        question: {
+          prompt: 'What does bubble sort do in each pass through the list?',
+          options: ['Finds the smallest item and moves it to the front', 'Swaps neighbouring items that are in the wrong order', 'Splits the list in half'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Searching Algorithms',
@@ -2581,6 +2846,12 @@ def binary_search(lst, target):
 numbers = list(range(1, 101))   # 1 to 100, already sorted
 print(binary_search(numbers, 73))   # Found in ~7 steps
 print(linear_search(numbers, 73))   # Would take 73 steps`,
+        question: {
+          prompt: 'Why must a list be sorted before you can use binary search on it?',
+          options: ['Binary search sorts it automatically first', 'Binary search halves the search area by comparing, which only works in order', 'Binary search is slower on unsorted lists but still works'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Big O Notation',
@@ -2613,6 +2884,12 @@ import math
 n = 1_000_000
 print(f"Linear steps: {n}")
 print(f"Binary steps: ~{int(math.log2(n)) + 1}")`,
+        question: {
+          prompt: 'For a list of 1,000,000 items, approximately how many steps does binary search (O(log n)) need?',
+          options: ['1,000,000', 'About 20', 'About 1,000'],
+          correctIndex: 1,
+        },
+
       },
     ],
     quiz: [
@@ -2750,6 +3027,12 @@ s.push("C")
 print(s)          # Stack['A', 'B', 'C'] <- top
 print(s.pop())    # C
 print(s.peek())   # B`,
+        question: {
+          prompt: 'After pushing \'A\', then \'B\', then \'C\' onto a stack, which item does pop() return?',
+          options: ['A', 'B', 'C'],
+          correctIndex: 2,
+        },
+
       },
       {
         title: 'Queues — First In, First Out',
@@ -2787,6 +3070,12 @@ q.enqueue("Carol")
 print(q.front())     # Alice (first in line)
 print(q.dequeue())   # Alice (served first)
 print(q.dequeue())   # Bob`,
+        question: {
+          prompt: 'After enqueuing \'Alice\', then \'Bob\', then \'Carol\', which item does dequeue() return?',
+          options: ['Carol', 'Bob', 'Alice'],
+          correctIndex: 2,
+        },
+
       },
       {
         title: 'Linked Lists',
@@ -2831,6 +3120,12 @@ ll.append(2)
 ll.append(3)
 ll.prepend(0)
 print(ll)   # 0 -> 1 -> 2 -> 3`,
+        question: {
+          prompt: 'What does each node in a linked list store?',
+          options: ['Only its data value', 'Only a pointer to the next node', 'Its data AND a pointer to the next node'],
+          correctIndex: 2,
+        },
+
       },
     ],
     quiz: [
@@ -2971,6 +3266,12 @@ data = json.loads(json_string)
 print(data["name"])         # Alex
 print(data["hobbies"][1])   # gaming
 print(data["address"]["city"])  # London`,
+        question: {
+          prompt: 'What does json.dumps(person) do to a Python dictionary?',
+          options: ['Saves it to a file', 'Converts it to a JSON-formatted string', 'Loads it from a file'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Reading & Writing JSON Files',
@@ -2998,6 +3299,12 @@ with open("save_game.json", "r") as f:
 print(f"Welcome back, {loaded['player']}!")
 print(f"Level: {loaded['level']}, Score: {loaded['score']}")
 print(f"Inventory: {', '.join(loaded['inventory'])}")`,
+        question: {
+          prompt: 'What is the difference between json.dump and json.dumps?',
+          options: ['dumps is faster than dump', 'dump writes to a file; dumps creates a string', 'There is no difference between them'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Parsing JSON Data',
@@ -3031,6 +3338,12 @@ top_active = [
 
 for user in top_active:
     print(f"  {user['name']}: {user['score']}")`,
+        question: {
+          prompt: 'In the code, active users with score > 8000 are found using a list comprehension. Which two conditions must both be true?',
+          options: ['active is True and score > 5000', 'active is True and score > 8000', 'id is odd and score > 8000'],
+          correctIndex: 1,
+        },
+
       },
     ],
     quiz: [
@@ -3163,6 +3476,12 @@ print("Words:", words[:5])   # first 5 words
 
 # Literal pattern
 print(re.search(r"scored", text).group())  # scored`,
+        question: {
+          prompt: 'What does re.findall(r\'\\d+\', text) return for the text \'My number is 555-1234 and I scored 100\'?',
+          options: ['The first number only: \'555\'', 'A list of all numbers: [\'555\', \'1234\', \'100\']', 'True or False'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Quantifiers and Character Classes',
@@ -3189,6 +3508,12 @@ print(phone_matches)   # ['555-1234', '800-9876']
 words = "Hello World PYTHON code"
 upper_words = re.findall(r"[A-Z][a-z]+", words)
 print(upper_words)  # words starting with capital: ['Hello', 'World']`,
+        question: {
+          prompt: 'What does the ? quantifier mean in a regex pattern?',
+          options: ['One or more of the preceding character', 'Zero or one of the preceding character (optional)', 'Zero or more of the preceding character'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Groups, Search, and Substitution',
@@ -3219,6 +3544,12 @@ for email in emails:
         print(f"Valid: {email}")
     else:
         print(f"Invalid: {email}")`,
+        question: {
+          prompt: 'What does re.sub(r\'[^\\w\\s]\', \'\', text) do to the string?',
+          options: ['Removes all letters and spaces', 'Removes all characters that are NOT letters, digits, or spaces', 'Replaces spaces with underscores'],
+          correctIndex: 1,
+        },
+
       },
     ],
     quiz: [
@@ -3344,6 +3675,12 @@ print(linsp)   # [0.   0.25 0.5  0.75 1.  ]
 matrix = np.array([[1, 2, 3],
                    [4, 5, 6]])
 print(matrix.shape)  # (2, 3) — 2 rows, 3 columns`,
+        question: {
+          prompt: 'What does np.arange(0, 10, 2) produce?',
+          options: ['[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]', '[0, 2, 4, 6, 8]', '[2, 4, 6, 8, 10]'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Array Maths and Operations',
@@ -3372,6 +3709,12 @@ print(f"Mean: {np.mean(data):.1f}")
 print(f"Max: {np.max(data)}")
 print(f"Min: {np.min(data)}")
 print(f"Std dev: {np.std(data):.2f}")`,
+        question: {
+          prompt: 'If a = np.array([1, 2, 3, 4, 5]), what does a * 3 return?',
+          options: ['[1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5]', '[3, 6, 9, 12, 15]', 'An error'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Slicing and Reshaping',
@@ -3406,6 +3749,12 @@ combined = np.vstack([a, b])   # stack vertically
 print(combined)
 # [[1 2 3]
 #  [4 5 6]]`,
+        question: {
+          prompt: 'For a 2D array grid, what does grid[:, 1] select?',
+          options: ['The first row', 'The entire second column', 'The second row'],
+          correctIndex: 1,
+        },
+
       },
     ],
     quiz: [
@@ -3535,6 +3884,12 @@ print()
 print(df.info())    # column types and non-null counts
 print()
 print(df.describe())  # statistics for numeric columns`,
+        question: {
+          prompt: 'How do you create a DataFrame from a Python dictionary in pandas?',
+          options: ['pd.Series(dict)', 'pd.DataFrame(dict)', 'pd.Table(dict)'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'Selecting, Filtering, and Sorting',
@@ -3565,6 +3920,12 @@ print(young_high)
 # Sort by Score descending
 ranked = df.sort_values("Score", ascending=False)
 print(ranked)`,
+        question: {
+          prompt: 'What does df[df[\'Score\'] >= 88] do?',
+          options: ['Selects only the Score column', 'Filters the DataFrame to rows where Score is 88 or higher', 'Deletes rows where Score is below 88'],
+          correctIndex: 1,
+        },
+
       },
       {
         title: 'GroupBy and Summary Statistics',
@@ -3597,6 +3958,12 @@ print(grade_counts)
 df["Passed"] = df["Score"] >= 80
 print("\\nWith Pass column:")
 print(df[["Name", "Score", "Passed"]])`,
+        question: {
+          prompt: 'What does df.groupby(\'Subject\')[\'Score\'].mean() calculate?',
+          options: ['The overall mean of all scores', 'The mean Score for each unique Subject', 'The subject that has the highest single score'],
+          correctIndex: 1,
+        },
+
       },
     ],
     quiz: [

@@ -5,9 +5,131 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, CheckCircle2, BookOpen, Clock, Star, Lightbulb, Code2, Trophy, ChevronDown, ChevronUp } from 'lucide-react';
-import { getModuleById } from '@/data/modules';
+import { getModuleById, SectionQuestion } from '@/data/modules';
 import { useGameStore } from '@/lib/store';
 import CodeEditor from '@/components/CodeEditor';
+
+// ─── Section question card ────────────────────────────────────────────────────
+
+const XP_PENALTY    = 5;   // XP deducted per wrong answer
+const MAX_PENALTIES = 2;   // stop deducting after this many wrong attempts
+const HINT_AFTER    = 3;   // show re-read hint after this many wrong attempts
+
+interface QuestionCardProps {
+  question: SectionQuestion;
+  onCorrect: () => void;
+  onWrong: (attempts: number) => void;
+}
+
+function QuestionCard({ question, onCorrect, onWrong }: QuestionCardProps) {
+  const [selected,  setSelected]  = useState<number | null>(null);
+  const [attempts,  setAttempts]  = useState(0);
+  const [showPenalty, setShowPenalty] = useState(false);
+  const [shake,     setShake]     = useState(false);
+
+  function handleAnswer(idx: number) {
+    if (selected !== null && selected === question.correctIndex) return; // already correct
+    setSelected(idx);
+
+    if (idx === question.correctIndex) {
+      onCorrect();
+    } else {
+      const newAttempts = attempts + 1;
+      setAttempts(newAttempts);
+      onWrong(newAttempts);
+
+      // Shake animation
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+
+      // XP penalty flash (only for first MAX_PENALTIES wrong answers)
+      if (newAttempts <= MAX_PENALTIES) {
+        setShowPenalty(true);
+        setTimeout(() => setShowPenalty(false), 1500);
+      }
+
+      // Reset selection after a moment so they can try again
+      setTimeout(() => setSelected(null), 800);
+    }
+  }
+
+  const isCorrect = selected === question.correctIndex;
+  const showHint  = attempts >= HINT_AFTER;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0, x: shake ? [0, -6, 6, -6, 6, 0] : 0 }}
+      transition={{ duration: shake ? 0.4 : 0.35 }}
+      className="relative rounded-xl border border-brand-400/30 bg-brand-500/8 p-4 mt-4"
+    >
+      {/* Floating XP penalty */}
+      <AnimatePresence>
+        {showPenalty && (
+          <motion.div
+            initial={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 0, y: -32 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.4, ease: 'easeOut' }}
+            className="absolute top-2 right-4 text-red-400 font-bold text-sm pointer-events-none z-10"
+          >
+            -{XP_PENALTY} XP
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <p className="text-white/90 font-semibold text-sm mb-3">
+        🧠 Quick Check: {question.prompt}
+      </p>
+
+      <div className="space-y-2">
+        {question.options.map((opt, i) => {
+          let style = 'bg-space-800/60 border-white/10 text-white/70 hover:border-brand-400/40 hover:bg-brand-500/10 cursor-pointer';
+          if (selected !== null) {
+            if (i === question.correctIndex) {
+              style = 'bg-green-400/15 border-green-400/50 text-green-300 cursor-default';
+            } else if (i === selected) {
+              style = 'bg-red-400/15 border-red-400/50 text-red-300 cursor-default';
+            } else {
+              style = 'bg-space-800/30 border-white/5 text-white/30 cursor-default';
+            }
+          }
+          return (
+            <button
+              key={i}
+              onClick={() => handleAnswer(i)}
+              disabled={isCorrect}
+              className={`w-full text-left px-3 py-2 rounded-lg border text-sm font-medium transition-all duration-150 ${style}`}
+            >
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Re-read hint after too many wrong attempts */}
+      {showHint && !isCorrect && (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mt-3 text-yellow-400/70 text-xs flex items-center gap-1.5"
+        >
+          💡 Hint: re-read the section above — the answer is there!
+        </motion.p>
+      )}
+
+      {isCorrect && (
+        <motion.p
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mt-3 text-green-400 text-xs font-semibold flex items-center gap-1.5"
+        >
+          <CheckCircle2 size={13} /> Correct! You can now mark this section done.
+        </motion.p>
+      )}
+    </motion.div>
+  );
+}
 
 // ─── Difficulty badge ────────────────────────────────────────────────────────
 
@@ -34,12 +156,16 @@ export default function ModulePage({ params }: { params: { id: string } }) {
   const [hintsOpen,         setHintsOpen]          = useState(false);
 
   // ── Anti-skip gates ──────────────────────────────────────────────────────
-  // Tracks which sections had their code run at least once
-  const [sectionCodeRun,  setSectionCodeRun]  = useState<Set<number>>(new Set());
-  // Countdown timers (seconds left) for text-only sections
-  const [sectionCountdown, setSectionCountdown] = useState<Record<number, number>>({});
+  // Sections where code was run at least once
+  const [sectionCodeRun,   setSectionCodeRun]   = useState<Set<number>>(new Set());
+  // Sections where the comprehension question was answered correctly
+  const [sectionAnswered,  setSectionAnswered]   = useState<Set<number>>(new Set());
+  // Whether the comprehension question is visible per section
+  const [questionVisible,  setQuestionVisible]   = useState<Set<number>>(new Set());
   // Whether code challenge editor has been run at least once
-  const [challengeRun, setChallengeRun] = useState(false);
+  const [challengeRun,     setChallengeRun]      = useState(false);
+
+  const addXP = useGameStore((s) => s.addXP);
 
   const timerRefs = useRef<Record<number, ReturnType<typeof setInterval>>>({});
 
@@ -56,41 +182,35 @@ export default function ModulePage({ params }: { params: { id: string } }) {
     }
   }, [completedSections.size, module, showChallenge]);
 
-  // Start a reading countdown for text-only sections when they become current
+  // Show question after code is run (code sections) or after 5s (text sections)
   useEffect(() => {
     if (!module) return;
     const section = module.sections[currentSection];
-    if (!section || section.code) return;           // code sections don't need timer
-    if (completedSections.has(currentSection)) return; // already done
-    if (sectionCountdown[currentSection] !== undefined) return; // timer already running
+    if (!section) return;
+    if (completedSections.has(currentSection)) return;
+    if (questionVisible.has(currentSection)) return;
 
-    let count = 10;
-    setSectionCountdown((prev) => ({ ...prev, [currentSection]: count }));
-    const id = setInterval(() => {
-      count -= 1;
-      setSectionCountdown((prev) => ({ ...prev, [currentSection]: Math.max(0, count) }));
-      if (count <= 0) clearInterval(id);
-    }, 1000);
-    timerRefs.current[currentSection] = id;
+    if (section.code) return; // for code sections, question appears after Run click
+
+    // Text-only section: show question after 5 seconds
+    const id = setTimeout(() => {
+      setQuestionVisible((prev) => { const n = new Set(prev); n.add(currentSection); return n; });
+    }, 5000);
+    timerRefs.current[currentSection] = id as unknown as ReturnType<typeof setInterval>;
+    return () => clearTimeout(id);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSection, module]);
 
-  // Cleanup timers on unmount
+  // Cleanup on unmount
   useEffect(() => {
     const refs = timerRefs.current;
     return () => { Object.values(refs).forEach(clearInterval); };
   }, []);
 
-  // Whether the "Got it" button is unlocked for a given section
+  // Whether "Got it" is unlocked: question must be answered correctly
   const canMarkDone = useCallback((idx: number): boolean => {
-    if (!module) return false;
-    const section = module.sections[idx];
-    if (section.code) return sectionCodeRun.has(idx);  // must run code
-    return (sectionCountdown[idx] ?? Infinity) <= 0;   // must wait timer
-  }, [module, sectionCodeRun, sectionCountdown]);
-
-  // Whether the quiz is unlocked (all sections + challenge code run)
-  const quizUnlocked = allDone && (challengeRun || alreadyCompleted);
+    return sectionAnswered.has(idx);
+  }, [sectionAnswered]);
 
   // ── Not found ──────────────────────────────────────────────────────────────
 
@@ -122,8 +242,9 @@ export default function ModulePage({ params }: { params: { id: string } }) {
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
-  const diff    = difficultyConfig[module.difficulty];
-  const allDone = completedSections.size === module.sections.length;
+  const diff        = difficultyConfig[module.difficulty];
+  const allDone     = completedSections.size === module.sections.length;
+  const quizUnlocked = allDone && (challengeRun || alreadyCompleted);
 
   function markSectionDone(idx: number) {
     setCompletedSections((prev) => {
@@ -135,7 +256,7 @@ export default function ModulePage({ params }: { params: { id: string } }) {
 
     // Scroll to next section (or challenge)
     const nextIdx = idx + 1;
-    if (nextIdx < module.sections.length) {
+    if (nextIdx < module!.sections.length) {
       setTimeout(() => {
         sectionRefs.current[nextIdx]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 200);
@@ -154,7 +275,7 @@ export default function ModulePage({ params }: { params: { id: string } }) {
   }
 
   function revealNextHint() {
-    if (revealedHints < module.codeChallenge.hints.length) {
+    if (revealedHints < module!.codeChallenge.hints.length) {
       setRevealedHints((n) => n + 1);
     }
   }
@@ -461,43 +582,62 @@ export default function ModulePage({ params }: { params: { id: string } }) {
 
                   {/* Code editor */}
                   {section.code && (
-                    <div className="mb-5">
+                    <div className="mb-4">
                       <CodeEditor
                         initialCode={section.code}
                         height="250px"
                         readOnly={false}
                         showRunButton={true}
-                        onRun={() => setSectionCodeRun((prev) => { const next = new Set(prev); next.add(idx); return next; })}
+                        onRun={() => {
+                          setSectionCodeRun((prev) => { const n = new Set(prev); n.add(idx); return n; });
+                          // Reveal question after running code
+                          setQuestionVisible((prev) => { const n = new Set(prev); n.add(idx); return n; });
+                        }}
                       />
                       {!done && !sectionCodeRun.has(idx) && (
                         <p className="mt-2 text-xs text-yellow-400/70 flex items-center gap-1.5">
-                          <span>▶</span> Run the code above to unlock &ldquo;Got it&rdquo;
+                          <span>▶</span> Run the code above to reveal the question
                         </p>
                       )}
                     </div>
                   )}
 
+                  {/* Comprehension question */}
+                  {!done && questionVisible.has(idx) && !sectionAnswered.has(idx) && (
+                    <QuestionCard
+                      question={section.question}
+                      onCorrect={() => {
+                        setSectionAnswered((prev) => { const n = new Set(prev); n.add(idx); return n; });
+                      }}
+                      onWrong={(attempts) => {
+                        if (attempts <= MAX_PENALTIES) addXP(-XP_PENALTY);
+                      }}
+                    />
+                  )}
+
+                  {/* Text-only sections: show waiting hint before question appears */}
+                  {!done && !section.code && !questionVisible.has(idx) && (
+                    <p className="text-xs text-white/30 italic mt-2">
+                      📖 Read through the section — a quick question will appear shortly…
+                    </p>
+                  )}
+
                   {/* Got it button */}
                   {!done && (() => {
                     const unlocked = canMarkDone(idx);
-                    const countdown = !section.code ? (sectionCountdown[idx] ?? 10) : 0;
                     return (
                       <motion.button
                         whileTap={unlocked ? { scale: 0.97 } : {}}
                         onClick={unlocked ? () => markSectionDone(idx) : undefined}
                         className={[
-                          'flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200',
+                          'flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 mt-4',
                           unlocked
                             ? 'bg-gradient-to-r from-brand-500 to-cyan-500 text-white shadow-lg shadow-brand-500/20 hover:opacity-90 cursor-pointer'
                             : 'bg-white/8 text-white/30 cursor-not-allowed',
                         ].join(' ')}
                       >
                         <CheckCircle2 size={16} />
-                        {unlocked
-                          ? 'Got it! ✓'
-                          : section.code
-                          ? 'Run the code first'
-                          : `Read first… ${countdown}s`}
+                        {unlocked ? 'Got it! ✓' : 'Answer the question above first'}
                       </motion.button>
                     );
                   })()}
